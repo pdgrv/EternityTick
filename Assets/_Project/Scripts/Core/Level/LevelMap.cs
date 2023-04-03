@@ -1,19 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Eternity.Core.Levels.Data;
+using Eternity.Core.Config;
 using Eternity.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = System.Random;
 using RangeInt = Eternity.Utils.RangeInt;
 
-namespace Eternity.Core.Levels
+namespace Eternity.Core.Level
 {
-    public class Level : MonoBehaviour
+    public class LevelMap : MonoBehaviour
     {
+        public event Action<Room> RoomChanged; 
+
         [SerializeField] private LevelsInfo levels;
 
         private List<Room> _rooms = new();
+        public IReadOnlyList<Room> Rooms => _rooms;
 
+        public Room CurrentRoom => Rooms[_currentPlayerRoom];
+
+        private int _currentPlayerRoom = 0;
+
+        public void MoveToNextRoom()
+        {
+            if (CurrentRoom.RoomData.RoomType is RoomType.End)
+            {
+                Debug.Log("Complete Level!");
+                PersistantData.Level++;
+                
+                int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+                SceneManager.LoadScene(currentSceneIndex);
+                return;
+            }
+            
+            _currentPlayerRoom++;
+            RoomChanged?.Invoke(CurrentRoom);
+            
+            Debug.Log($"Change room to {_currentPlayerRoom}");
+        }
+        
         public void CreateLevel(CoreContext ctx)
         {
             var levelData = levels.GetLevelData(ctx.CurrentLevel);
@@ -27,17 +54,6 @@ namespace Eternity.Core.Levels
             }
 
             CreateRoom(ctx, levelData, _rooms[^1], RoomType.End);
-
-            CreateTransitions();
-        }
-
-        private void CreateTransitions()
-        {
-            for (int i = 1; i < _rooms.Count; i++)
-            {
-                var prevRoom = _rooms[i - 1];
-                var room = _rooms[i - 1];
-            }
         }
 
         private void CreateRoom(CoreContext ctx, LevelData levelData, Room prevRoom, RoomType roomType)
@@ -48,8 +64,8 @@ namespace Eternity.Core.Levels
             var centerPos = prevRoom == null
                 ? Vector2Int.zero
                 : prevRoom.RoomData.GetExitPos() + prevRoom.RoomData.Exit.GetDirection() *
-                new Vector2Int(w / 2 + Constants.Field.ConnectionLength + 1,
-                    h / 2 + Constants.Field.ConnectionLength + 1);
+                new Vector2Int(w / 2 + Constants.FieldConnectionLength + 1,
+                    h / 2 + Constants.FieldConnectionLength + 1);
 
             Side enterSide = prevRoom == null ? Side.Down : prevRoom.RoomData.Exit.Invert();
             
@@ -63,7 +79,7 @@ namespace Eternity.Core.Levels
             var container = new GameObject($"Room_{_rooms.Count + 1}").transform;
             container.SetParent(transform);
             
-            var room = Room.CreateRoomField(roomData, ctx.Rnd, container);
+            var room = Room.GenerateCellsField(roomData, ctx.Rnd, container);
             _rooms.Add(room);
         }
 

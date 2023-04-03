@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
-using Eternity.Core.Levels.Data;
+using Eternity.Core.Config;
+using Eternity.Core.Views;
 using Eternity.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = System.Random;
 
-namespace Eternity.Core.Levels
+namespace Eternity.Core.Level
 {
     public enum RoomType
     {
@@ -17,6 +18,7 @@ namespace Eternity.Core.Levels
     public class Room
     {
         public readonly RoomData RoomData;
+        public bool IsCompleted = true;
 
         private readonly Dictionary<Vector2Int, CellView> _cells;
 
@@ -28,7 +30,7 @@ namespace Eternity.Core.Levels
 
         public bool TryGetCell(Vector2Int pos, out CellView cellView) => _cells.TryGetValue(pos, out cellView);
 
-        public static Room CreateRoomField(RoomData data, Random rnd, Transform container)
+        public static Room GenerateCellsField(RoomData data, Random rnd, Transform container)
         {
             Dictionary<Vector2Int, CellView> cells = new();
 
@@ -43,15 +45,23 @@ namespace Eternity.Core.Levels
                 }
             }
 
-            if (data.RoomType is not RoomType.End)
+            //connector from prev room
+            if (data.RoomType is not RoomType.Root)
             {
-                var exitPos = data.GetExitPos();
-                var exitDir = data.Exit.GetDirection();
-                for (int i = 1; i <= Constants.Field.ConnectionLength; i++)
+                var connectorStart = data.GetEnterPos();
+                var connectorDir = data.Enter.GetDirection();
+                for (int i = 1; i <= Constants.FieldConnectionLength; i++)
                 {
-                    var pos = exitPos + exitDir * i;
-                    CreateAndAddCell(pos,data.CellReferences.ConnectionTemplate);
+                    var pos = connectorStart + connectorDir * i;
+                    CreateAndAddCell(pos, data.CellReferences.ConnectionTemplate);
                 }
+            }
+
+            //exit
+            if (data.RoomType is RoomType.End)
+            {
+                var exitLevelPos = data.GetExitPos() + data.Exit.GetDirection();
+                CreateAndAddCell(exitLevelPos, data.CellReferences.ExitTemplate);
             }
 
             return new Room(data, cells);
@@ -90,6 +100,6 @@ namespace Eternity.Core.Levels
         }
 
         public Vector2Int GetExitPos() => CenterPos + Exit.GetDirection() * new Vector2Int(Width / 2, Height / 2);
-        public Vector2Int GetStartPos() => CenterPos + Enter.GetDirection() * new Vector2Int(Width / 2, Height / 2);
+        public Vector2Int GetEnterPos() => CenterPos + Enter.GetDirection() * new Vector2Int(Width / 2, Height / 2);
     }
 }

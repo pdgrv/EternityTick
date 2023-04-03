@@ -24,3 +24,5 @@ MonoBehaviour:
       emptyTemplates:
       - {fileID: -2027593973498846813, guid: 76f60d5580cef3141818c926a9cc4ce8, type: 3}
       - {fileID: -7366783138992297224, guid: 8f35926305efdb34db09cb6e58ec94e7, type: 3}
+      connectionTemplate: {fileID: -2027593973498846813, guid: c6e7119d51daa2942a4e3d53e248b06a, type: 3}
+      exitTemplate: {fileID: -2027593973498846813, guid: 9e53a30c852fa9d4a88af502187e8155, type: 3}

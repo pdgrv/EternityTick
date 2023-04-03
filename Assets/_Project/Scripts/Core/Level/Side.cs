@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Eternity.Core.Levels
+namespace Eternity.Core.Level
 {
     public enum Side
     {

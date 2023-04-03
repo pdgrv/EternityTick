@@ -1,9 +1,10 @@
-﻿using Eternity.Utils;
+﻿using Eternity.Core.Views;
+using Eternity.Utils;
 using UnityEngine;
 using Random = System.Random;
 using RangeInt = Eternity.Utils.RangeInt;
 
-namespace Eternity.Core.Levels.Data
+namespace Eternity.Core.Config
 {
     [CreateAssetMenu(fileName = nameof(LevelsInfo), menuName = "ER/Level" + nameof(LevelsInfo))]
     public class LevelsInfo : ScriptableObject
@@ -36,8 +37,10 @@ namespace Eternity.Core.Levels.Data
     {
         [SerializeField] private CellView[] emptyTemplates;
         [SerializeField] private CellView connectionTemplate;
+        [SerializeField] private CellView exitTemplate;
 
         public CellView GetEmptyCellView(Random rnd) => emptyTemplates.GetRandom(rnd);
         public CellView ConnectionTemplate => connectionTemplate;
+        public CellView ExitTemplate => exitTemplate;
     }
 }
